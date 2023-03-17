@@ -19,28 +19,30 @@
 #include <adv3.h>
 #include <en_us.h>
 
-versionInfo:    GameID
-        name = 'autoTest Library Demo Game'
-        byline = 'Diegesis & Mimesis'
-        desc = 'Demo game for the autoTest library. '
-        version = '1.0'
-        IFID = '12345'
-	showAbout() {
-		"This is a simple test game that demonstrates the features
-		of the autoTest library.
-		<.p>
-		Consult the README.txt document distributed with the library
-		source for a quick summary of how to use the library in your
-		own games.
-		<.p>
-		The library source is also extensively commented in a way
-		intended to make it as readable as possible. ";
+#include "autoTest.h"
+
+startRoom: Room 'Void' "This is a featureless void.";
++me: AutoTestActor
+	// Exit after ten turns.
+	autoTestMaxTurns = 10
+
+	// Output the "timestamp" every five turns.
+	autoTestCheckpointInterval = 5
+;
++alice: Person 'Alice' 'Alice'
+	"She looks like the first person you'd turn to in a problem. "
+	isProperName = true
+	isHer = true
+;
+++AgendaItem
+	initiallyActive = true
+	isReady = true
+	invokeItem() {
+		defaultReport('Alice announces, <q>Turn
+			<<spellInt(libGlobal.totalTurns)>> and all is
+			well.</q>');
 	}
 ;
 
-startRoom: Room 'Void'
-        "This is a featureless void."
-;
-+me: Person;
-
+versionInfo:    GameID;
 gameMain:       GameMainDef initialPlayerChar = me;
