@@ -1,4 +1,64 @@
 #charset "us-ascii"
+//
+// autoTest.t
+//
+// This provides a simple mechanism for "hands off" testing of TADS3
+// code.  Instead of prompting the player for a command every turn, by
+// default the turn counter will just automatically advance for a set
+// number of turns.
+//
+// The basic mechanism works by declaring the default player character to
+// be an instance of AutoTestActor.  Example:
+//
+// 	me: AutoTestActor
+//		autoTestMaxTurns = 10
+//	;
+//	gameMain: GameMainDef
+//		initialPlayerChar = me
+//	;
+//
+// This will cause the game to automagically run for ten turns and then
+// exit.
+//
+//
+// METHODS/PROPERTIES TO CHANGE
+//
+//	autoTestMaxTurns		The number of turns to run before
+//					exiting. This can be nil, in which
+//					case the game will run indefinitely.
+//					If you do this you'll want to
+//					want to also declare a autoTestTurn()
+//					method that implements some other exit
+//					condition.
+//	autoTestTurn()			A method that will be called every turn.
+//	autoTestCheckpoint()		A method that will be called every
+//					autoTestCheckpointInterval turns.  By
+//					default it outputs the number of times
+//					the autoTest logic has run and the
+//					global turn number.
+//	autoTestCheckpointInterval	If non-nil, autoTestCheckpoint() will
+//					be called every this many turns.  So
+//					if this is 10, it will be called every
+//					ten turns, if it's 2 it will be called
+//					every other turn, and so on.
+//	autoTestScriptName		If non-nil, log the transcript to the
+//					named file.
+//
+// UTILITY METHODS
+//
+//	autoTestEnd()			Exit the game
+//	autoTestLog(msg)		Outputs the given message, prefixed
+//					with autoTestDebugPrefix ('autoTest: '
+//					by default.  Just to make it easier
+//					to spot autoTest-related messages
+//					in the transcript.
+//	autoTestTimestamp()		Logs the autoTest turn count and the
+//					global turn count.  Those will start
+//					out the same, but there's no guarantee
+//					that they'll stay in sync (because
+//					actions can change the global turn by
+//					one, zero, or more than one).
+//
 #include <adv3.h>
 #include <en_us.h>
 
@@ -88,16 +148,20 @@ class AutoTestActor: Actor
 
 	// Advance the turn counter.
 	_autoTestCounter() {
-		_autoTestTurnCounter += 1;
-
-		// See if we're supposed to exit after a certain number
-		// of turns.  If not, we're done.
-		if(autoTestMaxTurns == nil)
+		// If we're not running for a set number of turns,
+		// just increment the counter and return.
+		if(autoTestMaxTurns == nil) {
+			_autoTestTurnCounter += 1;
 			return;
+		}
 
-		// See if we need to stop the game.
+		// If we're here, we're going to stop the game at some
+		// point, so check to see if that point is now.
 		if(_autoTestTurnCounter >= autoTestMaxTurns)
 			autoTestExit();
+
+		// Nope, just increment the turn counter.
+		_autoTestTurnCounter += 1;
 	}
 
 	// Logging function.  By default it's only used for timestamps,
@@ -140,11 +204,13 @@ class AutoTestActor: Actor
 	// logic should go.
 	autoTestTurn() {}
 
+	// Log a brief report and exit.
 	autoTestExit() {
 		autoTestLog('Exiting after <<toString(_autoTestTurnCounter)>>
 			turns.');
 		autoTestEnd();
 	}
+
 	// Throw an exception, ending the game.
 	autoTestEnd() { throw new QuittingException(); }
 ;

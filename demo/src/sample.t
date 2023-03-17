@@ -4,7 +4,8 @@
 // Version 1.0
 // Copyright 2022 Diegesis & Mimesis
 //
-// This is a very simple demonstration "game" for the autoTest library.
+// Noninteractive demo of the autoTest logic.  This'll just run for
+// ten turns and then exit.
 //
 // It can be compiled via the included makefile with
 //
@@ -22,6 +23,7 @@
 #include "autoTest.h"
 
 startRoom: Room 'Void' "This is a featureless void.";
+// We define me to be an instance of the AutoTestActor class.
 +me: AutoTestActor
 	// Exit after ten turns.
 	autoTestMaxTurns = 10
@@ -29,6 +31,7 @@ startRoom: Room 'Void' "This is a featureless void.";
 	// Output the "timestamp" every five turns.
 	autoTestCheckpointInterval = 5
 ;
+// Add an NPC to who'll generate some output every turn.
 +alice: Person 'Alice' 'Alice'
 	"She looks like the first person you'd turn to in a problem. "
 	isProperName = true
