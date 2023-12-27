@@ -23,14 +23,7 @@
 #include "autoTest.h"
 
 startRoom: Room 'Void' "This is a featureless void.";
-// We define me to be an instance of the AutoTestActor class.
-+me: AutoTestActor
-	// Exit after ten turns.
-	autoTestMaxTurns = 10
-
-	// Output the "timestamp" every five turns.
-	autoTestCheckpointInterval = 5
-;
++me: Person;
 // Add an NPC to who'll generate some output every turn.
 +alice: Person 'Alice' 'Alice'
 	"She looks like the first person you'd turn to in a problem. "
@@ -49,3 +42,12 @@ startRoom: Room 'Void' "This is a featureless void.";
 
 versionInfo:    GameID;
 gameMain:       GameMainDef initialPlayerChar = me;
+
+// The test declaration.
+AutoTest
+	// Exit after ten turns.
+	autoTestMaxTurns = 10
+
+	// Output the "timestamp" every five turns.
+	autoTestCheckpointInterval = 5
+;
