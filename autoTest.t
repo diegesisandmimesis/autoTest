@@ -155,10 +155,13 @@ class AutoTest: object
 	// normal adv3 processing.
 	executeTurn() {
 		// See if we need to start outputting the transcript.
-		if(_autoTestTurnCounter == 0)
+		if(_autoTestTurnCounter == 0) {
 			autoTestStartScript();
+			autoTestStartGame();
+		}
 	}
 
+	autoTestStartGame() {}
 
 	// Called by the AutoTestWait action.
 	autoTestMain() {
