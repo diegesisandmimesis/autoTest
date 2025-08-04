@@ -127,6 +127,9 @@ class AutoTest: object
 	// OTHER EXIT CONDITION IF YOU DO THIS.
 	autoTestMaxTurns = 100
 
+	// Boolean.  If true, filters all output text during testing.
+	autoTestSilent = nil
+
 	// Optional output file name.  If defined, we'll write the transcript
 	// to the given file.
 	autoTestScriptName = nil
@@ -156,6 +159,8 @@ class AutoTest: object
 	executeTurn() {
 		// See if we need to start outputting the transcript.
 		if(_autoTestTurnCounter == 0) {
+			if(autoTestSilent)
+				autoTestFilter.active = true;
 			autoTestStartScript();
 			autoTestStartGame();
 		}
@@ -233,8 +238,9 @@ class AutoTest: object
 
 	// Log a brief report and exit.
 	autoTestExit() {
+		autoTestFilter.active = nil;
 		autoTestLog('Exiting after <<toString(_autoTestTurnCounter)>>
-			turns.');
+			turn<<((_autoTestTurnCounter != 1) ? 's' : '')>>.');
 		autoTestEnd();
 	}
 
@@ -243,7 +249,7 @@ class AutoTest: object
 ;
 
 autoTestManager: PreinitObject
-	_test = nil
+	_test = perInstance(new Vector())
 
 	execute() {
 		// Make sure we have a player actor.
@@ -251,7 +257,7 @@ autoTestManager: PreinitObject
 			return;
 
 		// Add each test instance to our list.
-		forEachInstance(AutoTest, function(o) { _test = o; });
+		forEachInstance(AutoTest, { x: _test.append(x) });
 
 		// Add two bespoke methods to the player character.
 		gameMain.initialPlayerChar.setMethod(&executeTurn,
@@ -263,10 +269,15 @@ autoTestManager: PreinitObject
 	// Called by gPlayerChar.executeTurn(), this happens before most of
 	// the turn stuff.  
 	executeTurn() {
-		_test.executeTurn();
+		_test.forEach({ x: x.executeTurn });
 
 		// Call the custom wait command.
 		autoTestWait();
+
+		// If we don't have an actual test defined, we
+		// bail after the first turn.
+		if(_test.length < 1)
+			throw new QuittingException();
 	}
 
 	// Invoke our wait command.  This will output a zero-length
@@ -278,5 +289,11 @@ autoTestManager: PreinitObject
 	autoTestWait() { newActorAction(gPlayerChar, AutoTestWait); }
 
 	// Called by AutoTestWaitAction.
-	autoTestMain() { _test.autoTestMain(); }
+	autoTestMain() { _test.forEach({ x: x.autoTestMain() }); }
+;
+
+autoTestFilter: OutputFilter, PreinitObject
+	active = nil
+	filterText(str, val) { return(active ? '' : inherited(str, val)); }
+	execute() { mainOutputStream.addOutputFilter(self); }
 ;
